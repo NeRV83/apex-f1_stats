@@ -1,9 +1,3 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.ApexF1Stats" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
-
-    <style name="Theme.ApexF1Stats" parent="Base.Theme.ApexF1Stats" />
+<resources>
+    <style name="Theme.ApexF1Stats" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
