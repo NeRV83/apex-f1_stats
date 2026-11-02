@@ -40,16 +40,24 @@ cd ApexF1Stats
 
 ```
 app/src/main/java/ru/nerv/apex/
-├── ApexApplication.kt          # @HiltAndroidApp
-├── MainActivity.kt             # Single Activity, точка входа
+├── ApexApplication.kt              # @HiltAndroidApp
+├── MainActivity.kt                 # Single Activity, точка входа
 ├── data/
+│   ├── local/
+│   │   ├── ApexDatabase.kt         # Room database
+│   │   ├── dao/RaceDao.kt          # observeRaces, insertRaces
+│   │   └── entity/RaceEntity.kt    # таблица races
 │   ├── remote/
-│   │   ├── JolpicaApi.kt       # Retrofit-интерфейс
+│   │   ├── JolpicaApi.kt           # Retrofit-интерфейс
 │   │   ├── UserAgentInterceptor.kt
-│   │   └── dto/                # DTO под ответы Jolpica Alpha API
-│   └── ...
+│   │   └── dto/ScheduleDto.kt      # DTO под ответы Jolpica Alpha API
+│   └── repository/
+│       ├── RaceRepository.kt
+│       └── RaceRepositoryImpl.kt   # сеть → маппинг → Room
 └── di/
-    └── NetworkModule.kt        # OkHttpClient, Retrofit, JolpicaApi
+    ├── NetworkModule.kt            # OkHttpClient, Retrofit, JolpicaApi
+    ├── DatabaseModule.kt           # ApexDatabase, RaceDao
+    └── RepositoryModule.kt         # @Binds RaceRepository
 ```
 
 По мере развития проекта будут внесены изменения в структуру.
