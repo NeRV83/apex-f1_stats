@@ -16,15 +16,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
-import ru.nerv.apex.data.remote.JolpicaApi
+import kotlinx.coroutines.flow.first
+import ru.nerv.apex.data.repository.RaceRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // проверка сетевого соединения в logcat
     @Inject
-    lateinit var api: JolpicaApi
+    lateinit var repository: RaceRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +32,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 LaunchedEffect(Unit) {
-                    runCatching { api.getSchedule(2026) }
-                        .onSuccess { response ->
-                            Log.d("ApexCheck", "events=${response.data.events.size}")
-                        }
-                        .onFailure { e ->
-                            Log.e("ApexCheck", "failed", e)
-                        }
+                    runCatching { repository.refreshRaces(2026) }
+                        .onFailure { Log.e("ApexCheck", "refresh failed", it) }
+                        .onSuccess { Log.d("ApexCheck", "refresh ok") }
+
+                    val races = repository.observeRaces(2026).first()
+                    Log.d("ApexCheck", "races in db: ${races.size}, first=${races.firstOrNull()?.raceName}")
                 }
                 ApexApp()
             }
