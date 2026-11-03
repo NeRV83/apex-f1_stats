@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import ru.nerv.apex.data.repository.RaceRepository
 import javax.inject.Inject
 
@@ -25,10 +26,18 @@ class RacesViewModel @Inject constructor(
     private val _selectedYear = MutableStateFlow(2026)
     val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    private val _refreshTrigger = MutableStateFlow(0)
     val availableYears = (2026 downTo 2020).toList()
 
-    val uiState: StateFlow<RacesUiState> = _selectedYear
-        .flatMapLatest { year ->
+    val uiState: StateFlow<RacesUiState> = combine(
+        _selectedYear,
+        _refreshTrigger,
+        _isRefreshing
+    ) { year, _, isRefreshing ->
+        Triple(year, isRefreshing, System.currentTimeMillis())
+    }
+        .flatMapLatest { (year, isRefreshing, _) ->
             val networkState = flow {
                 emit(RacesUiState.Loading)
                 val result = runCatching { repository.refreshRaces(year) }
@@ -43,19 +52,24 @@ class RacesViewModel @Inject constructor(
                 initialValue = RacesUiState.Loading
             )
 
-            val dbFlow = repository.observeRaces(year)
-
-            combine(networkState, dbFlow) { networkState, races ->
+            combine(
+                networkState,
+                repository.observeRaces(year),
+                _isRefreshing
+            ) { netState, races, refreshing ->
                 when {
-                    races.isNotEmpty() -> RacesUiState.Success(selectedYear = year, races = races)
-                    networkState is RacesUiState.Error -> networkState
+                    races.isNotEmpty() -> RacesUiState.Success(
+                        selectedYear = year,
+                        races = races,
+                        isRefreshing = refreshing
+                    )
+
+                    netState is RacesUiState.Error -> netState
                     else -> RacesUiState.Loading
                 }
             }
         }
-        .catch { e ->
-            emit(RacesUiState.Error(e.message ?: "Неизвестная ошибка"))
-        }
+        .catch { e -> emit(RacesUiState.Error(e.message ?: "Неизвестная ошибка")) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -64,5 +78,13 @@ class RacesViewModel @Inject constructor(
 
     fun onYearSelected(year: Int) {
         _selectedYear.value = year
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            runCatching { repository.refreshRaces(_selectedYear.value) }
+            _isRefreshing.value = false
+        }
     }
 }

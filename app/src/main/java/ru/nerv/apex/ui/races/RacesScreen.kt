@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.nerv.apex.data.local.entity.RaceEntity
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +46,6 @@ fun RacesScreen(
     viewModel: RacesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-
     val currentYear by viewModel.selectedYear.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -61,30 +62,27 @@ fun RacesScreen(
             )
         }
     ) { innerPadding ->
-        Column(
+        // Получаем стейт для Pull-to-Refresh
+        val isRefreshing = (state as? RacesUiState.Success)?.isRefreshing == true
+
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = viewModel::refresh,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
             when (val s = state) {
                 is RacesUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
-
                 is RacesUiState.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = "Ошибка: ${s.message}")
                     }
                 }
-
                 is RacesUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
