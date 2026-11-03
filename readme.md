@@ -54,10 +54,15 @@ app/src/main/java/ru/nerv/apex/
 │   └── repository/
 │       ├── RaceRepository.kt
 │       └── RaceRepositoryImpl.kt   # сеть → маппинг → Room
-└── di/
-    ├── NetworkModule.kt            # OkHttpClient, Retrofit, JolpicaApi
-    ├── DatabaseModule.kt           # ApexDatabase, RaceDao
-    └── RepositoryModule.kt         # @Binds RaceRepository
+├── di/
+│   ├── NetworkModule.kt            # OkHttpClient, Retrofit, JolpicaApi
+│   ├── DatabaseModule.kt           # ApexDatabase, RaceDao
+│   └── RepositoryModule.kt         # @Binds RaceRepository
+└── ui/
+    └── races/
+        ├── RacesUiState.kt         # Loading / Success / Error
+        ├── RacesViewModel.kt       # @HiltViewModel, StateFlow
+        └── RacesScreen.kt          # LazyColumn с карточками гонок
 ```
 
 По мере развития проекта будут внесены изменения в структуру.
