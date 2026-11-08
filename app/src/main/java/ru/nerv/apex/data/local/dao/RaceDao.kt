@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import ru.nerv.apex.data.local.entity.RaceEntity
+import ru.nerv.apex.data.local.entity.ResultEntity
 
 @Dao
 interface RaceDao {
@@ -15,4 +16,10 @@ interface RaceDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRaces(races: List<RaceEntity>)
+
+    @Query("SELECT * FROM results WHERE roundId = :roundId ORDER BY position ASC")
+    fun observeResults(roundId: String): Flow<List<ResultEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertResults(results: List<ResultEntity>)
 }

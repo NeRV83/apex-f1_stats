@@ -41,28 +41,34 @@ cd ApexF1Stats
 ```
 app/src/main/java/ru/nerv/apex/
 ├── ApexApplication.kt              # @HiltAndroidApp
-├── MainActivity.kt                 # Single Activity, точка входа
+├── MainActivity.kt                 # Single Activity, NavHost
 ├── data/
 │   ├── local/
-│   │   ├── ApexDatabase.kt         # Room database
-│   │   ├── dao/RaceDao.kt          # observeRaces, insertRaces
-│   │   └── entity/RaceEntity.kt    # таблица races
+│   │   ├── ApexDatabase.kt         # Room database (races + results)
+│   │   ├── dao/RaceDao.kt          # CRUD для гонок и результатов
+│   │   └── entity/
+│   │       ├── RaceEntity.kt       # таблица races
+│   │       └── ResultEntity.kt     # таблица results
 │   ├── remote/
-│   │   ├── JolpicaApi.kt           # Retrofit-интерфейс
+│   │   ├── JolpicaApi.kt           # Retrofit-интерфейс (schedule + results)
 │   │   ├── UserAgentInterceptor.kt
-│   │   └── dto/ScheduleDto.kt      # DTO под ответы Jolpica Alpha API
+│   │   └── dto/
+│   │       ├── ScheduleDto.kt
+│   │       └── ResultsDto.kt
 │   └── repository/
 │       ├── RaceRepository.kt
 │       └── RaceRepositoryImpl.kt   # сеть → маппинг → Room
 ├── di/
-│   ├── NetworkModule.kt            # OkHttpClient, Retrofit, JolpicaApi
-│   ├── DatabaseModule.kt           # ApexDatabase, RaceDao
-│   └── RepositoryModule.kt         # @Binds RaceRepository
+│   ├── NetworkModule.kt
+│   ├── DatabaseModule.kt
+│   └── RepositoryModule.kt
 └── ui/
     └── races/
-        ├── RacesUiState.kt         # Loading / Success / Error
-        ├── RacesViewModel.kt       # @HiltViewModel, StateFlow
-        └── RacesScreen.kt          # LazyColumn с карточками гонок
+        ├── RacesUiState.kt         # Loading / Success / Error для списка
+        ├── RacesViewModel.kt       # календарь + Pull-to-Refresh + выбор года
+        ├── RacesScreen.kt          # LazyColumn с карточками гонок
+        ├── RaceDetailViewModel.kt  # загрузка результатов гонки
+        └── RaceDetailScreen.kt     # таблица результатов
 ```
 
 По мере развития проекта будут внесены изменения в структуру.
@@ -71,11 +77,31 @@ app/src/main/java/ru/nerv/apex/
 
 Используется Alpha-версия Jolpica: `https://api.jolpi.ca/f1/alpha/...`.
 
-Текущий эндпоинт:
+Текущие эндпоинты:
 
 - `GET /f1/alpha/schedules/{year}/` — календарь сезона с трассами и сессиями.
+- `GET /f1/alpha/results/{round_id}/{session_filter}/` — результаты гонки (по умолчанию session_filter = R).
 
 Jolpica требует передавать кастомный заголовок `User-Agent`. В приложении это делает `UserAgentInterceptor`.
+
+## Как работает загрузка данных
+
+1. RacesViewModel при смене года или Pull-to-Refresh вызывает RaceRepository.refreshRaces(year).
+2. RaceRepositoryImpl запрашивает JolpicaApi.getSchedule(year).
+3. Полученные ScheduleEvent маппятся в RaceEntity и записываются в Room через RaceDao.insertRaces.
+4. RaceDao.observeRaces(year) возвращает Flow<List<RaceEntity>>, который UI собирает через collectAsStateWithLifecycle.
+
+При тапе по карточке открывается RaceDetailScreen, который через RaceDetailViewModel запрашивает refreshResults(roundId), маппит ResultItem → ResultEntity и отображает таблицу из observeResults(roundId).
+
+При ошибке сети refresh* бросает исключение, ViewModel ловит его и ставит флаг isOffline (или Error в RaceDetailScreen). observe* продолжает отдавать кэш из Room — это и есть офлайн-режим. Если кэш пуст, UI показывает сообщение «Нет сети и нет сохранённых данных».
+
+## Тесты
+
+Есть unit-тесты на RaceRepositoryImpl (JUnit + kotlinx-coroutines-test):
+- refreshRaces writes mapped entities to dao — успешный парсинг ScheduleResponse и запись в DAO.
+- refreshRaces fails but dao retains cached data — при ошибке сети кэш не стирается.
+- refreshResults writes mapped results to dao — успешный парсинг ResultsResponse и запись в DAO.
+- refreshResults fails but dao retains cached results — при ошибке сети кэш результатов не стирается.
 
 ## Лицензия
 
