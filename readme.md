@@ -41,7 +41,7 @@ cd ApexF1Stats
 ```
 app/src/main/java/ru/nerv/apex/
 ├── ApexApplication.kt              # @HiltAndroidApp
-├── MainActivity.kt                 # Single Activity, NavHost
+├── MainActivity.kt                 # Single Activity, NavHost (races, race/{id}, settings)
 ├── data/
 │   ├── local/
 │   │   ├── ApexDatabase.kt         # Room database (races + results)
@@ -55,20 +55,25 @@ app/src/main/java/ru/nerv/apex/
 │   │   └── dto/
 │   │       ├── ScheduleDto.kt
 │   │       └── ResultsDto.kt
-│   └── repository/
-│       ├── RaceRepository.kt
-│       └── RaceRepositoryImpl.kt   # сеть → маппинг → Room
+│   ├── repository/
+│   │   ├── RaceRepository.kt
+│   │   └── RaceRepositoryImpl.kt   # сеть → маппинг → Room
+│   └── settings/
+│       └── SettingsRepository.kt   # DataStore (тема, язык, сезон по умолчанию)
 ├── di/
 │   ├── NetworkModule.kt
 │   ├── DatabaseModule.kt
 │   └── RepositoryModule.kt
 └── ui/
-    └── races/
-        ├── RacesUiState.kt         # Loading / Success / Error для списка
-        ├── RacesViewModel.kt       # календарь + Pull-to-Refresh + выбор года
-        ├── RacesScreen.kt          # LazyColumn с карточками гонок
-        ├── RaceDetailViewModel.kt  # загрузка результатов гонки
-        └── RaceDetailScreen.kt     # таблица результатов
+    ├── races/
+    │   ├── RacesUiState.kt         # Loading / Success / Error для списка
+    │   ├── RacesViewModel.kt       # календарь + Pull-to-Refresh + выбор года
+    │   ├── RacesScreen.kt          # LazyColumn с карточками + иконка настроек
+    │   ├── RaceDetailViewModel.kt  # загрузка результатов гонки
+    │   └── RaceDetailScreen.kt     # таблица результатов
+    └── settings/
+        ├── SettingsViewModel.kt    # StateFlow для темы, языка и года
+        └── SettingsScreen.kt       # экран настроек
 ```
 
 По мере развития проекта будут внесены изменения в структуру.
@@ -94,6 +99,13 @@ Jolpica требует передавать кастомный заголово�
 При тапе по карточке открывается RaceDetailScreen, который через RaceDetailViewModel запрашивает refreshResults(roundId), маппит ResultItem → ResultEntity и отображает таблицу из observeResults(roundId).
 
 При ошибке сети refresh* бросает исключение, ViewModel ловит его и ставит флаг isOffline (или Error в RaceDetailScreen). observe* продолжает отдавать кэш из Room — это и есть офлайн-режим. Если кэш пуст, UI показывает сообщение «Нет сети и нет сохранённых данных».
+
+## Настройки
+
+Настройки хранятся в DataStore Preferences и доступны через иконку шестеренки на главном экране:
+- Тема: Системная / Светлая / Тёмная.
+- Язык: Системный / English / Русский.
+- Сезон по умолчанию: выбор года (от 2020 до 2026), который будет открываться при запуске.
 
 ## Тесты
 

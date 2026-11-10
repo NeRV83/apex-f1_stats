@@ -38,11 +38,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.nerv.apex.data.local.entity.RaceEntity
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RacesScreen(
     onRaceClick: (roundId: String) -> Unit,
+    onSettingsClick: () -> Unit,
     viewModel: RacesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -58,11 +62,13 @@ fun RacesScreen(
                         availableYears = viewModel.availableYears,
                         onYearSelected = viewModel::onYearSelected
                     )
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Настройки")
+                    }
                 }
             )
         }
     ) { innerPadding ->
-        // Получаем стейт для Pull-to-Refresh
         val isRefreshing = (state as? RacesUiState.Success)?.isRefreshing == true
 
         PullToRefreshBox(
@@ -78,11 +84,13 @@ fun RacesScreen(
                         CircularProgressIndicator()
                     }
                 }
+
                 is RacesUiState.Error -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = "Ошибка: ${s.message}")
                     }
                 }
+
                 is RacesUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),

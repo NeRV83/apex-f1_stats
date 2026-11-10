@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import ru.nerv.apex.ui.races.RaceDetailScreen
 import ru.nerv.apex.ui.races.RacesScreen
+import ru.nerv.apex.ui.settings.SettingsScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,10 +32,12 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("races") {
                             RacesScreen(
-                                onRaceClick = { roundId ->
-                                    navController.navigate("race/$roundId")
-                                }
+                                onRaceClick = { roundId -> navController.navigate("race/$roundId") },
+                                onSettingsClick = { navController.navigate("settings") }
                             )
+                        }
+                        composable("settings") {
+                            SettingsScreen(onBackClick = { navController.popBackStack() })
                         }
 
                         composable(
