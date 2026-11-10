@@ -15,36 +15,39 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.nerv.apex.data.repository.RaceRepository
+import ru.nerv.apex.data.settings.SettingsRepository
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class RacesViewModel @Inject constructor(
-    private val repository: RaceRepository
+    private val repository: RaceRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _selectedYear = MutableStateFlow(2026)
     val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
-    private val _refreshTrigger = MutableStateFlow(0)
     val availableYears = (2026 downTo 2020).toList()
 
-    val uiState: StateFlow<RacesUiState> = combine(
-        _selectedYear,
-        _refreshTrigger,
-        _isRefreshing
-    ) { year, _, isRefreshing ->
-        Triple(year, isRefreshing, System.currentTimeMillis())
+    init {
+        viewModelScope.launch {
+            settingsRepository.defaultYearFlow.collect { defaultYear ->
+                if (_selectedYear.value != defaultYear && _selectedYear.value == 2026) {
+                    _selectedYear.value = defaultYear
+                }
+            }
+        }
     }
-        .flatMapLatest { (year, isRefreshing, _) ->
+
+    val uiState: StateFlow<RacesUiState> = _selectedYear
+        .flatMapLatest { year ->
             val networkState = flow {
                 emit(RacesUiState.Loading)
                 val result = runCatching { repository.refreshRaces(year) }
                 if (result.isFailure) {
-                    emit(RacesUiState.Error("Ошибка сети: ${result.exceptionOrNull()?.message}"))
-                } else {
-                    emit(RacesUiState.Loading)
+                    emit(RacesUiState.Error(result.exceptionOrNull()?.message ?: "Network error"))
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -69,7 +72,7 @@ class RacesViewModel @Inject constructor(
                 }
             }
         }
-        .catch { e -> emit(RacesUiState.Error(e.message ?: "Неизвестная ошибка")) }
+        .catch { e -> emit(RacesUiState.Error(e.message ?: "Unknown error")) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

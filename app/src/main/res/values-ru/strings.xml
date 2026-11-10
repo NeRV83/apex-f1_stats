@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apex - F1 Stats</string>
+
+    <string name="back">Назад</string>
+    <string name="settings">Настройки</string>
+    <string name="error_network">Ошибка сети</string>
+    <string name="error_no_data">Нет сети и нет сохранённых данных</string>
+
+    <string name="offline_mode">Офлайн-режим: показаны сохранённые данные</string>
+    <string name="round_number">Этап %1$d</string>
+    <string name="date_tbd">дата уточняется</string>
+
+    <string name="race_results">Результаты гонки</string>
+    <string name="results_unavailable">Результаты пока недоступны</string>
+
+    <string name="theme">Тема</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="language">Язык</string>
+    <string name="language_system">Системный</string>
+    <string name="language_en">English</string>
+    <string name="language_ru">Русский</string>
+    <string name="default_season">Сезон по умолчанию</string>
+    <string name="grand_prix">Гран при</string>
+</resources>

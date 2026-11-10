@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.nerv.apex.data.settings.SettingsRepository
 import javax.inject.Inject
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -29,7 +31,16 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setLanguage(language: String) {
-        viewModelScope.launch { settingsRepository.setLanguage(language) }
+        viewModelScope.launch {
+            settingsRepository.setLanguage(language)
+
+            val localeList = when (language) {
+                "en" -> LocaleListCompat.forLanguageTags("en")
+                "ru" -> LocaleListCompat.forLanguageTags("ru")
+                else -> LocaleListCompat.getEmptyLocaleList()
+            }
+            AppCompatDelegate.setApplicationLocales(localeList)
+        }
     }
 
     fun setDefaultYear(year: Int) {

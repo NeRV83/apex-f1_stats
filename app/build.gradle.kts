@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-//    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
@@ -49,7 +48,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.core)
-    implementation(libs.androidx.material3)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
@@ -73,6 +71,8 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 
-    // Other
+    // UI & System
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
 }

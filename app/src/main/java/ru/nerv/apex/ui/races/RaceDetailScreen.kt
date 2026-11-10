@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import ru.nerv.apex.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,10 +28,13 @@ fun RaceDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Результаты гонки") },
+                title = { Text(stringResource(R.string.race_results)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 }
             )
@@ -44,12 +49,14 @@ fun RaceDetailScreen(
                 is RaceDetailUiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
+
                 is RaceDetailUiState.Error -> {
                     Text(
                         text = s.message,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+
                 is RaceDetailUiState.Success -> {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
@@ -59,6 +66,13 @@ fun RaceDetailScreen(
                             ResultRow(result)
                         }
                     }
+                }
+
+                is RaceDetailUiState.Empty -> {
+                    Text(
+                        text = stringResource(R.string.results_unavailable),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }

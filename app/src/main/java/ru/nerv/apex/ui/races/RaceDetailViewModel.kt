@@ -1,5 +1,6 @@
 package ru.nerv.apex.ui.races
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RaceDetailViewModel @Inject constructor(
     private val repository: RaceRepository,
-    savedStateHandle: androidx.lifecycle.SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val roundId: String = savedStateHandle.get<String>("roundId") ?: ""
@@ -23,19 +24,23 @@ class RaceDetailViewModel @Inject constructor(
     val uiState: StateFlow<RaceDetailUiState> = flow {
         emit(RaceDetailUiState.Loading)
 
-        // Пытаемся обновить из сети (игнорируем ошибку, если кэш есть)
-        runCatching { repository.refreshResults(roundId) }
+        val networkResult = runCatching { repository.refreshResults(roundId) }
 
-        // Слушаем базу
         repository.observeResults(roundId).collect { results ->
             if (results.isNotEmpty()) {
                 emit(RaceDetailUiState.Success(results))
+            } else if (networkResult.isFailure) {
+                emit(
+                    RaceDetailUiState.Error(
+                        networkResult.exceptionOrNull()?.message ?: "Network error"
+                    )
+                )
             } else {
-                emit(RaceDetailUiState.Error("Результаты пока недоступны"))
+                emit(RaceDetailUiState.Empty)
             }
         }
     }
-        .catch { e -> emit(RaceDetailUiState.Error(e.message ?: "Ошибка загрузки")) }
+        .catch { e -> emit(RaceDetailUiState.Error(e.message ?: "Loading error")) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -47,4 +52,5 @@ sealed interface RaceDetailUiState {
     data object Loading : RaceDetailUiState
     data class Success(val results: List<ResultEntity>) : RaceDetailUiState
     data class Error(val message: String) : RaceDetailUiState
+    data object Empty : RaceDetailUiState
 }

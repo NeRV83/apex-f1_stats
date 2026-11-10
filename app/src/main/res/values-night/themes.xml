@@ -1,3 +1,6 @@
 <resources>
-    <style name="Theme.ApexF1Stats" parent="android:Theme.Material.NoActionBar" />
+
+    <style name="Theme.ApexF1Stats" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/dark_window_background</item>
+    </style>
 </resources>
