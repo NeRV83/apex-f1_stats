@@ -10,6 +10,7 @@ import org.junit.Test
 import ru.nerv.apex.data.local.dao.RaceDao
 import ru.nerv.apex.data.local.entity.RaceEntity
 import ru.nerv.apex.data.local.entity.ResultEntity
+import ru.nerv.apex.data.local.entity.TeamEntity
 import ru.nerv.apex.data.remote.JolpicaApi
 import ru.nerv.apex.data.remote.dto.Circuit
 import ru.nerv.apex.data.remote.dto.DetailMetadata
@@ -22,7 +23,9 @@ import ru.nerv.apex.data.remote.dto.Schedule
 import ru.nerv.apex.data.remote.dto.ScheduleEvent
 import ru.nerv.apex.data.remote.dto.ScheduleResponse
 import ru.nerv.apex.data.remote.dto.Season
+import ru.nerv.apex.data.remote.dto.SessionResponse
 import ru.nerv.apex.data.remote.dto.Team
+import ru.nerv.apex.data.remote.dto.TeamsResponse
 
 class RaceRepositoryImplTest {
 
@@ -40,6 +43,14 @@ class RaceRepositoryImplTest {
         override suspend fun getResults(roundId: String, sessionFilter: String): ResultsResponse {
             if (throwResultsError) throw RuntimeException("Network error")
             return resultsResponse!!
+        }
+
+        override suspend fun getSession(sessionId: String): SessionResponse {
+            throw UnsupportedOperationException("Not needed for this test")
+        }
+
+        override suspend fun getTeams(): TeamsResponse {
+            throw UnsupportedOperationException("Not needed for this test")
         }
     }
 
@@ -61,6 +72,16 @@ class RaceRepositoryImplTest {
 
         override suspend fun insertResults(results: List<ResultEntity>) {
             insertedResults.addAll(results)
+        }
+
+        override suspend fun updateScheduledLaps(roundId: String, laps: Int) {
+        }
+
+        override fun observeTeams(): Flow<List<TeamEntity>> {
+            return flowOf(emptyList())
+        }
+
+        override suspend fun insertTeams(teams: List<TeamEntity>) {
         }
     }
 
