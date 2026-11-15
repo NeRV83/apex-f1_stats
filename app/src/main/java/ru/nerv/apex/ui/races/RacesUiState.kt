@@ -10,5 +10,5 @@ sealed interface RacesUiState {
         val isRefreshing: Boolean = false,
     ) : RacesUiState
 
-    data class Error(val message: String) : RacesUiState
+    data class Error(val isNetworkError: Boolean) : RacesUiState
 }

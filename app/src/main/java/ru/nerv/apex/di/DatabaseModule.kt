@@ -18,7 +18,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): ApexDatabase =
-        Room.databaseBuilder(context, ApexDatabase::class.java, "apex.db").build()
+        Room.databaseBuilder(context, ApexDatabase::class.java, "apex.db")
+            .fallbackToDestructiveMigration(false)
+            .build()
 
     @Provides
     fun provideRaceDao(db: ApexDatabase): RaceDao = db.raceDao()

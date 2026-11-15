@@ -23,6 +23,7 @@ data class ResultEntity(
     val position: Int?,
     val driverName: String,
     val teamName: String,
+    val teamColor: String? = null,
     val time: String?,
     val status: String?,
     val points: Double?

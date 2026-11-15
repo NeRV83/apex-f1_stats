@@ -7,6 +7,7 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import ru.nerv.apex.data.local.entity.RaceEntity
 import ru.nerv.apex.data.local.entity.ResultEntity
+import ru.nerv.apex.data.local.entity.TeamEntity
 
 @Dao
 interface RaceDao {
@@ -22,4 +23,13 @@ interface RaceDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertResults(results: List<ResultEntity>)
+
+    @Query("UPDATE races SET scheduledLaps = :laps WHERE roundId = :roundId")
+    suspend fun updateScheduledLaps(roundId: String, laps: Int)
+
+    @Query("SELECT * FROM teams ORDER BY name ASC")
+    fun observeTeams(): Flow<List<TeamEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTeams(teams: List<TeamEntity>)
 }

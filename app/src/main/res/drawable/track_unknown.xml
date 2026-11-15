@@ -1,0 +1,65 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="100dp"
+    android:viewportWidth="240"
+    android:viewportHeight="120">
+
+    <!-- 1. Свечение (толстая линия) -->
+    <path
+        android:pathData="M 80,20 L 30,20 A 20,20 0 0,0 10,40 L 10,80 A 20,20 0 0,0 30,100 L 80,100
+                          C 95,100 110,75 120,60
+                          C 130,75 145,100 160,100
+                          L 210,100 A 20,20 0 0,0 230,80 L 230,40 A 20,20 0 0,0 210,20 L 160,20
+                          C 145,20 130,45 120,60
+                          C 110,45 95,20 80,20 Z"
+        android:strokeWidth="16"
+        android:strokeColor="#40FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- 2. Основная трасса (черная линия) -->
+    <path
+        android:pathData="M 80,20 L 30,20 A 20,20 0 0,0 10,40 L 10,80 A 20,20 0 0,0 30,100 L 80,100
+                          C 95,100 110,75 120,60
+                          C 130,75 145,100 160,100
+                          L 210,100 A 20,20 0 0,0 230,80 L 230,40 A 20,20 0 0,0 210,20 L 160,20
+                          C 145,20 130,45 120,60
+                          C 110,45 95,20 80,20 Z"
+        android:strokeWidth="8"
+        android:strokeColor="#000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- 3. Шахматная линия старта (еще ниже, пересекает нижнюю прямую) -->
+    <group>
+        <!-- Белые клетки -->
+        <path android:pathData="M 169,75 L 177,75 L 177,83 L 169,83 Z" android:fillColor="#FFFFFF" />
+        <path android:pathData="M 185,75 L 193,75 L 193,83 L 185,83 Z" android:fillColor="#FFFFFF" />
+
+        <path android:pathData="M 177,83 L 185,83 L 185,91 L 177,91 Z" android:fillColor="#FFFFFF" />
+
+        <path android:pathData="M 169,91 L 177,91 L 177,99 L 169,99 Z" android:fillColor="#FFFFFF" />
+        <path android:pathData="M 185,91 L 193,91 L 193,99 L 185,99 Z" android:fillColor="#FFFFFF" />
+
+        <path android:pathData="M 177,99 L 185,99 L 185,107 L 177,107 Z" android:fillColor="#FFFFFF" />
+
+        <path android:pathData="M 169,107 L 177,107 L 177,115 L 169,115 Z" android:fillColor="#FFFFFF" />
+        <path android:pathData="M 185,107 L 193,107 L 193,115 L 185,115 Z" android:fillColor="#FFFFFF" />
+
+        <!-- Черные клетки -->
+        <path android:pathData="M 177,75 L 185,75 L 185,83 L 177,83 Z" android:fillColor="#000000" />
+
+        <path android:pathData="M 169,83 L 177,83 L 177,91 L 169,91 Z" android:fillColor="#000000" />
+        <path android:pathData="M 185,83 L 193,83 L 193,91 L 185,91 Z" android:fillColor="#000000" />
+
+        <path android:pathData="M 177,91 L 185,91 L 185,99 L 177,99 Z" android:fillColor="#000000" />
+
+        <path android:pathData="M 169,99 L 177,99 L 177,107 L 169,107 Z" android:fillColor="#000000" />
+        <path android:pathData="M 185,99 L 193,99 L 193,107 L 185,107 Z" android:fillColor="#000000" />
+
+        <path android:pathData="M 177,107 L 185,107 L 185,115 L 177,115 Z" android:fillColor="#000000" />
+    </group>
+
+</vector>

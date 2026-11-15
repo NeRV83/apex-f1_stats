@@ -1,40 +1,28 @@
 package ru.nerv.apex.ui.races
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,14 +34,18 @@ import ru.nerv.apex.data.local.entity.RaceEntity
 @Composable
 fun RacesScreen(
     onRaceClick: (roundId: String) -> Unit,
-    onSettingsClick: () -> Unit,
+    contentPadding: PaddingValues,
     viewModel: RacesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val currentYear by viewModel.selectedYear.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
+    var expandedRaceId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(contentPadding)) {
+        Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
@@ -62,49 +54,49 @@ fun RacesScreen(
                         availableYears = viewModel.availableYears,
                         onYearSelected = viewModel::onYearSelected
                     )
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings)
-                        )
-                    }
-                }
+                },
+                windowInsets = WindowInsets(0)
             )
-        }
-    ) { innerPadding ->
-        val isRefreshing = (state as? RacesUiState.Success)?.isRefreshing == true
 
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = viewModel::refresh,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when (val s = state) {
-                is RacesUiState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+            val isRefreshing = (state as? RacesUiState.Success)?.isRefreshing == true
+
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when (val s = state) {
+                    is RacesUiState.Loading -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
 
-                is RacesUiState.Error -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = s.message)
+                    is RacesUiState.Error -> {
+                        val errorText = if (s.isNetworkError) stringResource(R.string.error_network) else stringResource(
+                            R.string.unknown_error
+                        )
+                        Text(text = errorText)
                     }
-                }
 
-                is RacesUiState.Success -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(s.races, key = { it.roundId }) { race ->
-                            RaceCard(
-                                race = race,
-                                onClick = { onRaceClick(race.roundId) }
-                            )
+                    is RacesUiState.Success -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(s.races, key = { it.roundId }) { race ->
+                                RaceCard(
+                                    race = race,
+                                    isExpanded = expandedRaceId == race.roundId,
+                                    onExpandClick = {
+                                        expandedRaceId =
+                                            if (expandedRaceId == race.roundId) null else race.roundId
+                                    },
+                                    onResultsClick = { onRaceClick(race.roundId) },
+                                    onLoadLaps = { viewModel.loadLapsForRace(race) }
+                                )
+                            }
                         }
                     }
                 }
@@ -158,27 +150,130 @@ private fun YearDropdown(
 }
 
 @Composable
-private fun RaceCard(race: RaceEntity, onClick: () -> Unit) {
+private fun RaceCard(
+    race: RaceEntity,
+    isExpanded: Boolean,
+    onExpandClick: () -> Unit,
+    onResultsClick: () -> Unit,
+    onLoadLaps: () -> Unit
+) {
+    LaunchedEffect(isExpanded) {
+        if (isExpanded) {
+            onLoadLaps()
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable { onExpandClick() },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = race.raceName ?: stringResource(R.string.grand_prix),
-                style = MaterialTheme.typography.titleLarge
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(if (isExpanded) 240.dp else 100.dp)
+                    .background(MaterialTheme.colorScheme.primary)
             )
-            Text(
-                text = "${race.country ?: ""} · ${race.circuitName}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = stringResource(R.string.round_number, race.roundNumber ?: 0) +
-                        " · " +
-                        (race.raceLocalTimestamp ?: stringResource(R.string.date_tbd)),
-                style = MaterialTheme.typography.bodyMedium
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.round, (race.roundNumber ?: 0) + 1),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = race.raceName?.uppercase() ?: stringResource(R.string.grand_prix_default),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${race.countryFlag ?: ""} ${race.country ?: ""} · ${race.circuitName}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF949498)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = formatRaceDate(race.raceLocalTimestamp),
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                AnimatedVisibility(visible = isExpanded) {
+                    Column {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        val trackRes = getTrackImage(race.circuitName)
+                        if (trackRes != null) {
+                            Image(
+                                painter = painterResource(id = trackRes),
+                                contentDescription = stringResource(R.string.track_layout),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                                    .padding(horizontal = 32.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            InfoItem(
+                                label = stringResource(R.string.laps),
+                                value = race.scheduledLaps?.toString() ?: stringResource(R.string.is_loading)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = onResultsClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text(
+                                stringResource(R.string.view_results).uppercase(),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = stringResource(R.string.expand),
+                modifier = Modifier.padding(end = 16.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun InfoItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color(0xFF949498))
     }
 }

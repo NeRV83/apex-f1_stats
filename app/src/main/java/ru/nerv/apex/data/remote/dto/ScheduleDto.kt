@@ -2,7 +2,6 @@ package ru.nerv.apex.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-// metadata + data
 data class DetailResponse<T>(
     @SerializedName("metadata") val metadata: DetailMetadata,
     @SerializedName("data") val data: T
@@ -11,8 +10,6 @@ data class DetailResponse<T>(
 data class DetailMetadata(
     @SerializedName("timestamp") val timestamp: String
 )
-
-// Schedule (календарь сезона)
 
 data class ScheduleResponse(
     @SerializedName("metadata") val metadata: DetailMetadata,
@@ -61,7 +58,7 @@ data class Circuit(
     @SerializedName("locality") val locality: String?,
     @SerializedName("country_code") val countryCode: String?,
     @SerializedName("country") val country: String?,
-    @SerializedName("country_flag") val countryFlag: String?,
+    @SerializedName("country_flag") val countryFlag: String?, // <-- ДОБАВЛЕНО
     @SerializedName("latitude") val latitude: Double?,
     @SerializedName("longitude") val longitude: Double?,
     @SerializedName("altitude") val altitude: Double?,
@@ -77,7 +74,9 @@ data class ScheduleSession(
     @SerializedName("local_timestamp") val localTimestamp: String?,
     @SerializedName("timezone") val timezone: String?,
     @SerializedName("results_url") val resultsUrl: String,
-    @SerializedName("laps_url") val lapsUrl: String
+    @SerializedName("laps_url") val lapsUrl: String,
+    @SerializedName("scheduled_laps") val scheduledLaps: Int?,
+    @SerializedName("completed_laps") val completedLaps: Int?
 )
 
 data class BasicSession(
