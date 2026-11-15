@@ -1,7 +1,6 @@
 package ru.nerv.apex.data.settings
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -19,12 +18,12 @@ class SettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        val THEME_KEY = stringPreferencesKey("theme") // "system", "light", "dark"
-        val LANGUAGE_KEY = stringPreferencesKey("language") // "system", "en", "ru"
+        val THEME_KEY = stringPreferencesKey("theme")
+        val LANGUAGE_KEY = stringPreferencesKey("language")
         val DEFAULT_YEAR_KEY = intPreferencesKey("default_year")
     }
 
-    val themeFlow: Flow<String> = context.dataStore.data.map { it[THEME_KEY] ?: "system" }
+    val themeFlow: Flow<String> = context.dataStore.data.map { it[THEME_KEY] ?: "dark" }
     val languageFlow: Flow<String> = context.dataStore.data.map { it[LANGUAGE_KEY] ?: "system" }
     val defaultYearFlow: Flow<Int> = context.dataStore.data.map { it[DEFAULT_YEAR_KEY] ?: 2026 }
 

@@ -11,6 +11,21 @@ Android-приложение для просмотра календаря и р�
 Тема диплома: «Проектирование и разработка Android-приложения “Apex” для отображения календаря и
 результатов гонок Формулы-1».
 
+## Возможности
+
+- Просмотр календаря гонок за выбранный сезон (2020–2026).
+- Раскрывающиеся карточки гонок с отображением схемы трассы, флага страны и количества кругов.
+- Экран детального просмотра результатов гонки (позиция, пилот, команда, время/статус).
+- Просмотр списка команд с их цветами и национальностями.
+- Pull-to-Refresh для принудительного обновления списка гонок.
+- Полноценный офлайн-режим (данные из Room).
+- Настройки (DataStore):
+    - Тема (Системная / Светлая / Тёмная) — по умолчанию тёмная.
+    - Язык (Системный / English / Русский).
+    - Сезон по умолчанию.
+- Локализация (en / ru) с переключением на лету.
+- Нижняя панель навигации (Гонки, Команды, Настройки, О приложении).
+
 ## Стек
 
 - **Язык:** Kotlin
@@ -43,43 +58,33 @@ cd ApexF1Stats
 
 ```
 app/src/main/java/ru/nerv/apex/
-├── ApexApplication.kt
-├── MainActivity.kt
+├── ApexApplication.kt              # @HiltAndroidApp
+├── MainActivity.kt                 # Single Activity, NavHost, BottomBar
 ├── data/
 │   ├── local/
-│   │   ├── ApexDatabase.kt
-│   │   ├── dao/RaceDao.kt
+│   │   ├── ApexDatabase.kt         # Room database (races, results, teams)
+│   │   ├── dao/RaceDao.kt          # CRUD для всех сущностей
 │   │   └── entity/
-│   │       ├── RaceEntity.kt
-│   │       └── ResultEntity.kt
+│   │       ├── RaceEntity.kt       # таблица races
+│   │       ├── ResultEntity.kt     # таблица results
+│   │       └── TeamEntity.kt       # таблица teams
 │   ├── remote/
-│   │   ├── JolpicaApi.kt
+│   │   ├── JolpicaApi.kt           # Retrofit (schedules, results, teams, sessions)
 │   │   ├── UserAgentInterceptor.kt
-│   │   └── dto/
-│   │       ├── ScheduleDto.kt
-│   │       └── ResultsDto.kt
+│   │   └── dto/                    # DTO под ответы Jolpica Alpha API
 │   ├── repository/
 │   │   ├── RaceRepository.kt
-│   │   └── RaceRepositoryImpl.kt
+│   │   └── RaceRepositoryImpl.kt   # сеть → маппинг → Room
 │   └── settings/
-│       └── SettingsRepository.kt
-├── di/
-│   ├── NetworkModule.kt
-│   ├── DatabaseModule.kt
-│   └── RepositoryModule.kt
+│       └── SettingsRepository.kt   # DataStore
+├── di/                             # Hilt-модули
 └── ui/
-    ├── races/
-    │   ├── RacesUiState.kt
-    │   ├── RacesViewModel.kt
-    │   ├── RacesScreen.kt
-    │   ├── RaceDetailViewModel.kt
-    │   └── RaceDetailScreen.kt
-    ├── settings/
-    │   ├── SettingsViewModel.kt
-    │   └── SettingsScreen.kt
-    └── theme/
-        ├── Color.kt
-        └── Theme.kt
+    ├── about/                      # экран "О приложении"
+    ├── navigation/                 # BottomNavItem
+    ├── races/                      # список гонок, детали, ViewModels
+    ├── settings/                   # экран настроек
+    ├── teams/                      # экран команд
+    └── theme/                      # ApexTheme, цвета
 ```
 
 По мере развития проекта будут внесены изменения в структуру.
@@ -93,25 +98,20 @@ app/src/main/java/ru/nerv/apex/
 - `GET /f1/alpha/schedules/{year}/` — календарь сезона с трассами и сессиями.
 - `GET /f1/alpha/results/{round_id}/{session_filter}/` — результаты гонки (по умолчанию
   session_filter = R).
+- `GET /core/teams/` — список команд.
+- `GET /core/sessions/{session_id}/` — данные сессии.
 
 Jolpica требует передавать кастомный заголовок `User-Agent`. В приложении это делает
 `UserAgentInterceptor`.
 
 ## Как работает загрузка данных
 
-1. RacesViewModel при смене года или Pull-to-Refresh вызывает RaceRepository.refreshRaces (year).
-2. RaceRepositoryImpl запрашивает JolpicaApi.getSchedule (year).
-3. Полученные ScheduleEvent маппятся в RaceEntity и записываются в Room через RaceDao.insertRaces.
-4. RaceDao.observeRaces (year) возвращает Flow<List<RaceEntity>>, который UI собирает через
-   collectAsStateWithLifecycle.
+1. RacesViewModel при смене года или Pull-to-Refresh вызывает RaceRepository.refreshRaces(year).
+2. RaceRepositoryImpl запрашивает JolpicaApi.getSchedule(year), маппит ScheduleEvent → RaceEntity и пишет в Room.
+3. RaceDao.observeRaces(year) возвращает Flow<List<RaceEntity>>, который UI собирает через collectAsStateWithLifecycle.
+4. При раскрытии карточки гонки, если scheduledLaps равен null, ViewModel вызывает refreshRaceLaps(roundId, sessionId), который делает запрос к /core/sessions/ и сохраняет результат в Room. Это позволяет избежать N+1 запросов при загрузке списка.
 
-При тапе по карточке открывается RaceDetailScreen, который через RaceDetailViewModel запрашивает
-refreshResults (roundId), маппит ResultItem → ResultEntity и отображает таблицу из observeResults
-(roundId).
-
-При ошибке сети refresh* бросает исключение, ViewModel ловит его и ставит флаг isOffline (или Error
-в RaceDetailScreen). observe* продолжает отдавать кэш из Room — это и есть офлайн-режим. Если кэш
-пуст, UI показывает сообщение «Нет сети и нет сохранённых данных».
+При ошибке сети refresh* бросает исключение, ViewModel ловит его и передает в UI флаг isNetworkError. observe* продолжает отдавать кэш из Room — это офлайн-режим.
 
 ## Настройки
 

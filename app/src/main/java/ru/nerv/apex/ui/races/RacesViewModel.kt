@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ru.nerv.apex.data.local.entity.RaceEntity
 import ru.nerv.apex.data.repository.RaceRepository
 import ru.nerv.apex.data.settings.SettingsRepository
 import javax.inject.Inject
@@ -47,7 +48,7 @@ class RacesViewModel @Inject constructor(
                 emit(RacesUiState.Loading)
                 val result = runCatching { repository.refreshRaces(year) }
                 if (result.isFailure) {
-                    emit(RacesUiState.Error(result.exceptionOrNull()?.message ?: "Network error"))
+                    emit(RacesUiState.Error(isNetworkError = true))
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -72,7 +73,7 @@ class RacesViewModel @Inject constructor(
                 }
             }
         }
-        .catch { e -> emit(RacesUiState.Error(e.message ?: "Unknown error")) }
+        .catch { e -> emit(RacesUiState.Error(isNetworkError = true)) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -88,6 +89,15 @@ class RacesViewModel @Inject constructor(
             _isRefreshing.value = true
             runCatching { repository.refreshRaces(_selectedYear.value) }
             _isRefreshing.value = false
+        }
+    }
+
+    fun loadLapsForRace(race: RaceEntity) {
+        if (race.scheduledLaps != null || race.sessionId == null) return
+        viewModelScope.launch {
+            runCatching {
+                repository.refreshRaceLaps(race.roundId, race.sessionId)
+            }
         }
     }
 }

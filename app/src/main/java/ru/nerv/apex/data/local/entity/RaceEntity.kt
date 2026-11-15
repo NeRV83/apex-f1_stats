@@ -12,6 +12,9 @@ data class RaceEntity(
     val circuitName: String,
     val country: String?,
     val countryCode: String?,
+    val countryFlag: String? = null,
     val raceTimestamp: String?,
-    val raceLocalTimestamp: String?
+    val raceLocalTimestamp: String?,
+    val scheduledLaps: Int? = null,
+    val sessionId: String? = null,
 )

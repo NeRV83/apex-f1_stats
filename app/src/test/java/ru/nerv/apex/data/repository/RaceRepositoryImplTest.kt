@@ -156,8 +156,28 @@ class RaceRepositoryImplTest {
                 id = "season_2026", url = "", year = 2026, wikipedia = null, roundsInfo = null,
                 events = listOf(
                     ScheduleEvent(
-                        round = Round(id = "round_1", url = "", number = 1, name = "Australian Grand Prix", isCancelled = false, raceNumber = 1, wikipedia = null),
-                        circuit = Circuit(id = "circuit_1", url = "", name = "Albert Park", locality = "Melbourne", countryCode = "AUS", country = "Australia", countryFlag = null, latitude = null, longitude = null, altitude = null, wikipedia = null),
+                        round = Round(
+                            id = "round_1",
+                            url = "",
+                            number = 1,
+                            name = "Australian Grand Prix",
+                            isCancelled = false,
+                            raceNumber = 1,
+                            wikipedia = null
+                        ),
+                        Circuit(
+                            id = "circuit_1",
+                            url = "",
+                            name = "Albert Park",
+                            locality = "Melbourne",
+                            countryCode = "AUS",
+                            country = "Australia",
+                            countryFlag = "🇦🇺", // <-- ДОБАВЛЕНО
+                            latitude = null,
+                            longitude = null,
+                            altitude = null,
+                            wikipedia = null
+                        ),
                         schedule = emptyList()
                     )
                 )
@@ -171,13 +191,42 @@ class RaceRepositoryImplTest {
             data = Results(
                 code = "R", title = "Race",
                 season = Season(id = "s1", year = 2026),
-                round = Round(id = "round_1", url = "", number = 1, name = "Australian Grand Prix", isCancelled = false, raceNumber = 1, wikipedia = null),
-                circuit = Circuit(id = "c1", url = "", name = "Albert Park", locality = "Melbourne", countryCode = "AUS", country = "Australia", countryFlag = null, latitude = null, longitude = null, altitude = null, wikipedia = null),
+                round = Round(
+                    id = "round_1",
+                    url = "",
+                    number = 1,
+                    name = "Australian Grand Prix",
+                    isCancelled = false,
+                    raceNumber = 1,
+                    wikipedia = null
+                ),
+                circuit = Circuit(
+                    id = "c1",
+                    url = "",
+                    name = "Albert Park",
+                    locality = "Melbourne",
+                    countryCode = "AUS",
+                    country = "Australia",
+                    countryFlag = null,
+                    latitude = null,
+                    longitude = null,
+                    altitude = null,
+                    wikipedia = null
+                ),
                 results = listOf(
                     ResultItem(
-                        driver = Driver(givenName = "Max", familyName = "Verstappen", abbreviation = "VER"),
+                        driver = Driver(
+                            givenName = "Max",
+                            familyName = "Verstappen",
+                            abbreviation = "VER"
+                        ),
                         team = Team(name = "Red Bull Racing", primaryColor = "#0000FF"),
-                        position = 1, positionText = "1", time = "1:30:00", status = "Finished", points = 25.0, laps = 58
+                        position = 1,
+                        positionText = "1",
+                        time = "1:30:00",
+                        status = "Finished",
+                        points = 25.0,
+                        laps = 58
                     )
                 )
             )

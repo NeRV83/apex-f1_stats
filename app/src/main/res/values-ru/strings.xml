@@ -2,17 +2,10 @@
 <resources>
     <string name="app_name">Apex - F1 Stats</string>
 
-    <string name="back">Назад</string>
-    <string name="settings">Настройки</string>
-    <string name="error_network">Ошибка сети</string>
-    <string name="error_no_data">Нет сети и нет сохранённых данных</string>
-
-    <string name="offline_mode">Офлайн-режим: показаны сохранённые данные</string>
-    <string name="round_number">Этап %1$d</string>
-    <string name="date_tbd">дата уточняется</string>
-
-    <string name="race_results">Результаты гонки</string>
-    <string name="results_unavailable">Результаты пока недоступны</string>
+    <string name="nav_bar_races">Гонки</string>
+    <string name="nav_bar_teams">Команды</string>
+    <string name="nav_bar_settings">Настройки</string>
+    <string name="nav_bar_about">О приложении</string>
 
     <string name="theme">Тема</string>
     <string name="theme_system">Системная</string>
@@ -23,5 +16,30 @@
     <string name="language_en">English</string>
     <string name="language_ru">Русский</string>
     <string name="default_season">Сезон по умолчанию</string>
+    <string name="back">Назад</string>
+
+    <string name="about">Дипломный проект.\nДанные предоставлены Jolpica F1 API.</string>
+
+    <string name="error_network">Ошибка сети</string>
+    <string name="error_no_data">Нет сохранённых данных</string>
+    <string name="unknown_error">Неизвестная ошибка</string>
+    <string name="error_no_team_data">Нет данных о командах</string>
+
+    <string name="offline_mode">Офлайн-режим: показаны сохранённые данные</string>
+    <string name="date_tbd">Дата уточняется</string>
+
+    <string name="round_number">Этап %1$d</string>
+    <string name="race_results">Результаты гонки</string>
+    <string name="results_unavailable">Результаты пока недоступны</string>
     <string name="grand_prix">Гран при</string>
+    <string name="grand_prix_default">ГРАН ПРИ</string>
+    <string name="round">РАУНД %1$d</string>
+    <string name="laps">КРУГОВ</string>
+    <string name="corners">ПОВОРОТОВ</string>
+    <string name="view_results">РЕЗУЛЬТАТЫ</string>
+    <string name="pts">%1$d ОЧКОВ</string>
+    <string name="teams">Команды</string>
+    <string name="track_layout">Карта трека</string>
+    <string name="expand">Развернуть</string>
+    <string name="is_loading">…</string>
 </resources>

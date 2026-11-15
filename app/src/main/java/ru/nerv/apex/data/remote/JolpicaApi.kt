@@ -4,6 +4,8 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import ru.nerv.apex.data.remote.dto.ResultsResponse
 import ru.nerv.apex.data.remote.dto.ScheduleResponse
+import ru.nerv.apex.data.remote.dto.SessionResponse
+import ru.nerv.apex.data.remote.dto.TeamsResponse
 
 interface JolpicaApi {
 
@@ -17,4 +19,13 @@ interface JolpicaApi {
         @Path("round_id") roundId: String,
         @Path("session_filter") sessionFilter: String = "R"
     ): ResultsResponse
+
+    /** Получение ИД гоночной сессии */
+    @GET("f1/alpha/core/sessions/{session_id}/")
+    suspend fun getSession(@Path("session_id") sessionId: String): SessionResponse
+
+    /** Команды */
+    @GET("f1/alpha/core/teams/")
+    suspend fun getTeams(): TeamsResponse
+
 }
