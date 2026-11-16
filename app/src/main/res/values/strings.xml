@@ -3,6 +3,7 @@
 
     <string name="nav_bar_races">Races</string>
     <string name="nav_bar_teams">Teams</string>
+    <string name="nav_bar_drivers">Drivers</string>
     <string name="nav_bar_settings">Settings</string>
     <string name="nav_bar_about">About</string>
 
@@ -41,4 +42,10 @@
     <string name="track_layout">Track layout</string>
     <string name="expand">Expand</string>
     <string name="is_loading">…</string>
+    <string name="drivers">Drivers</string>
+
+    <string name="share_race_text">Check out this race: %1$s, %2$s!</string>
+    <string name="unknown_team">Unknown Team</string>
+    <string name="pts_uppercase">PTS</string>
+    <string name="share">Share</string>
 </resources>

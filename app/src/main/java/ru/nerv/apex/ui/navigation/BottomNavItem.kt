@@ -2,6 +2,7 @@ package ru.nerv.apex.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -17,11 +18,15 @@ sealed class BottomNavItem(
     )
 
     data object Teams : BottomNavItem(
-        "teams", Icons.Default.Person, R.string.nav_bar_teams
+        "teams", Icons.Default.AccountBox, R.string.nav_bar_teams
+    )
+
+    data object Drivers : BottomNavItem(
+        "drivers", Icons.Default.Person, R.string.nav_bar_drivers
     )
 
     data object Settings : BottomNavItem(
-            "settings", Icons.Default.Settings, R.string.nav_bar_settings
+        "settings", Icons.Default.Settings, R.string.nav_bar_settings
     )
 
     data object About : BottomNavItem(

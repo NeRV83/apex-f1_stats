@@ -4,8 +4,9 @@
 
     <string name="nav_bar_races">Гонки</string>
     <string name="nav_bar_teams">Команды</string>
+    <string name="nav_bar_drivers">Пилоты</string>
     <string name="nav_bar_settings">Настройки</string>
-    <string name="nav_bar_about">О приложении</string>
+    <string name="nav_bar_about">Инфо</string>
 
     <string name="theme">Тема</string>
     <string name="theme_system">Системная</string>
@@ -42,4 +43,10 @@
     <string name="track_layout">Карта трека</string>
     <string name="expand">Развернуть</string>
     <string name="is_loading">…</string>
+    <string name="drivers">Пилоты</string>
+
+    <string name="share_race_text">Смотри, какая крутая гонка: %1$s, %2$s!</string>
+    <string name="unknown_team">Неизвестная команда</string>
+    <string name="pts_uppercase">ОЧКИ</string>
+    <string name="share">Поделиться</string>
 </resources>

@@ -1,5 +1,6 @@
 package ru.nerv.apex.ui.races
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -32,23 +34,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.nerv.apex.R
 import ru.nerv.apex.data.local.entity.ResultEntity
+import ru.nerv.apex.utils.shareText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RaceDetailScreen(
     onBackClick: () -> Unit,
+    raceName: String,
+    raceDate: String,
     viewModel: RaceDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val shareText = stringResource(R.string.share_race_text, raceName, raceDate)
 
     Scaffold(
         topBar = {
@@ -60,6 +68,13 @@ fun RaceDetailScreen(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        shareText(context, shareText)
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
                     }
                 }
             )
@@ -87,7 +102,7 @@ fun RaceDetailScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(s.results) { result ->
+                        items(s.results, key = { it.id }) { result ->
                             ResultRow(result)
                         }
                     }
@@ -113,6 +128,13 @@ private fun ResultRow(result: ResultEntity) {
         Color.Gray
     }
 
+    val positionColor = when (result.position) {
+        1 -> Color(0xFFFFD700)
+        2 -> Color(0xFFC0C0C0)
+        3 -> Color(0xFFCD7F32)
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
     Column {
         Row(
             modifier = Modifier
@@ -120,19 +142,24 @@ private fun ResultRow(result: ResultEntity) {
                 .padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "${result.position ?: "-"}",
+            Box(
                 modifier = Modifier.width(40.dp),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Black,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "${result.position ?: "-"}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
+                    color = positionColor
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             Box(
                 modifier = Modifier
                     .width(4.dp)
-                    .height(36.dp)
+                    .height(40.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(teamColor)
             )
@@ -149,6 +176,14 @@ private fun ResultRow(result: ResultEntity) {
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF949498)
                 )
+                if (result.status != null && result.status != "Finished") {
+                    Text(
+                        text = result.status,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
             Column(horizontalAlignment = Alignment.End) {
@@ -159,13 +194,15 @@ private fun ResultRow(result: ResultEntity) {
                 )
                 if (result.points != null && result.points > 0) {
                     Text(
-                        text = stringResource(R.string.pts, result.points.toInt()),
+                        text = "${result.points.toInt()} PTS",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
+
         HorizontalDivider(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
             thickness = 1.dp

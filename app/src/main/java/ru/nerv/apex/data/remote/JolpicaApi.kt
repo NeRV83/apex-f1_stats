@@ -2,6 +2,7 @@ package ru.nerv.apex.data.remote
 
 import retrofit2.http.GET
 import retrofit2.http.Path
+import ru.nerv.apex.data.remote.dto.ErgastStandingsResponse
 import ru.nerv.apex.data.remote.dto.ResultsResponse
 import ru.nerv.apex.data.remote.dto.ScheduleResponse
 import ru.nerv.apex.data.remote.dto.SessionResponse
@@ -27,5 +28,9 @@ interface JolpicaApi {
     /** Команды */
     @GET("f1/alpha/core/teams/")
     suspend fun getTeams(): TeamsResponse
+
+    /** Турнирная таблица */
+    @GET("ergast/f1/{year}/driverstandings/")
+    suspend fun getDriverStandings(@Path("year") year: Int): ErgastStandingsResponse
 
 }

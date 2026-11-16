@@ -33,7 +33,7 @@ import ru.nerv.apex.data.local.entity.RaceEntity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RacesScreen(
-    onRaceClick: (roundId: String) -> Unit,
+    onRaceClick: (roundId: String, name: String, date: String) -> Unit,
     contentPadding: PaddingValues,
     viewModel: RacesViewModel = hiltViewModel()
 ) {
@@ -42,9 +42,11 @@ fun RacesScreen(
 
     var expandedRaceId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .padding(contentPadding)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
@@ -73,9 +75,10 @@ fun RacesScreen(
                     }
 
                     is RacesUiState.Error -> {
-                        val errorText = if (s.isNetworkError) stringResource(R.string.error_network) else stringResource(
-                            R.string.unknown_error
-                        )
+                        val errorText =
+                            if (s.isNetworkError) stringResource(R.string.error_network) else stringResource(
+                                R.string.unknown_error
+                            )
                         Text(text = errorText)
                     }
 
@@ -86,15 +89,24 @@ fun RacesScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(s.races, key = { it.roundId }) { race ->
+                                val formattedDate = formatRaceDate(race.raceLocalTimestamp)
+                                val raceName = race.raceName ?: "Grand Prix"
                                 RaceCard(
                                     race = race,
+                                    formattedDate = formattedDate,
                                     isExpanded = expandedRaceId == race.roundId,
                                     onExpandClick = {
                                         expandedRaceId =
                                             if (expandedRaceId == race.roundId) null else race.roundId
                                     },
-                                    onResultsClick = { onRaceClick(race.roundId) },
-                                    onLoadLaps = { viewModel.loadLapsForRace(race) }
+                                    onLoadLaps = { viewModel.loadLapsForRace(race) },
+                                    onResultsClick = {
+                                        onRaceClick(
+                                            race.roundId,
+                                            raceName,
+                                            formattedDate
+                                        )
+                                    }
                                 )
                             }
                         }
@@ -152,6 +164,7 @@ private fun YearDropdown(
 @Composable
 private fun RaceCard(
     race: RaceEntity,
+    formattedDate: String,
     isExpanded: Boolean,
     onExpandClick: () -> Unit,
     onResultsClick: () -> Unit,
@@ -194,7 +207,8 @@ private fun RaceCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = race.raceName?.uppercase() ?: stringResource(R.string.grand_prix_default),
+                    text = race.raceName?.uppercase()
+                        ?: stringResource(R.string.grand_prix_default),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Black
                 )
@@ -206,7 +220,7 @@ private fun RaceCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = formatRaceDate(race.raceLocalTimestamp),
+                    text = formattedDate,
                     style = MaterialTheme.typography.bodySmall
                 )
 
@@ -237,7 +251,8 @@ private fun RaceCard(
                         ) {
                             InfoItem(
                                 label = stringResource(R.string.laps),
-                                value = race.scheduledLaps?.toString() ?: stringResource(R.string.is_loading)
+                                value = race.scheduledLaps?.toString()
+                                    ?: stringResource(R.string.is_loading)
                             )
                         }
 

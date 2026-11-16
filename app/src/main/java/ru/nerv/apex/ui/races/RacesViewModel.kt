@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
@@ -34,11 +35,8 @@ class RacesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            settingsRepository.defaultYearFlow.collect { defaultYear ->
-                if (_selectedYear.value != defaultYear && _selectedYear.value == 2026) {
-                    _selectedYear.value = defaultYear
-                }
-            }
+            val defaultYear = settingsRepository.defaultYearFlow.first()
+            _selectedYear.value = defaultYear
         }
     }
 

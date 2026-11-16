@@ -1,11 +1,14 @@
 package ru.nerv.apex.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import ru.nerv.apex.data.local.dao.RaceDao
+import ru.nerv.apex.data.local.entity.DriverEntity
 import ru.nerv.apex.data.local.entity.RaceEntity
 import ru.nerv.apex.data.local.entity.ResultEntity
 import ru.nerv.apex.data.local.entity.TeamEntity
 import ru.nerv.apex.data.remote.JolpicaApi
+import ru.nerv.apex.data.remote.dto.DriverStandingData
 import ru.nerv.apex.data.remote.dto.ResultItem
 import ru.nerv.apex.data.remote.dto.ScheduleEvent
 import ru.nerv.apex.data.remote.dto.TeamData
@@ -52,6 +55,44 @@ class RaceRepositoryImpl @Inject constructor(
         dao.insertTeams(entities)
     }
 
+    override fun observeDrivers(): Flow<List<DriverEntity>> = dao.observeDrivers()
+
+    override suspend fun refreshDrivers(year: Int) {
+        val teamsFromDb = dao.observeTeams().first().associateBy { it.name }
+
+        if (teamsFromDb.isEmpty()) {
+            runCatching { refreshTeams() }
+            val updatedTeams = dao.observeTeams().first().associateBy { it.name }
+            mapDrivers(year, updatedTeams)
+        } else {
+            mapDrivers(year, teamsFromDb)
+        }
+    }
+
+    private suspend fun mapDrivers(year: Int, teamsMap: Map<String, TeamEntity>) {
+        val response = api.getDriverStandings(year)
+        val standingsList = response.mrData.standingsTable.standingsLists.firstOrNull() ?: return
+
+        val drivers = standingsList.driverStandings.map { standing ->
+            val teamName = standing.constructors.firstOrNull()?.name
+            val teamColor = teamsMap[teamName]?.primaryColor
+
+            DriverEntity(
+                id = standing.driver.driverId,
+                name = "${standing.driver.givenName} ${standing.driver.familyName}",
+                abbreviation = standing.driver.code,
+                carNumber = standing.driver.permanentNumber?.toIntOrNull(),
+                countryFlag = null,
+                nationality = standing.driver.nationality,
+                teamName = teamName,
+                teamColor = teamColor,
+                position = standing.position?.toIntOrNull(),
+                points = standing.points?.toDoubleOrNull()
+            )
+        }
+        dao.insertDrivers(drivers)
+    }
+
 }
 
 private fun ScheduleEvent.toRaceEntity(year: Int): RaceEntity {
@@ -93,4 +134,17 @@ private fun TeamData.toTeamEntity() = TeamEntity(
     primaryColor = primaryColor,
     nationality = nationality,
     countryFlag = countryFlag
+)
+
+private fun DriverStandingData.toDriverEntity() = DriverEntity(
+    id = driver.id,
+    name = "${driver.givenName} ${driver.familyName}",
+    abbreviation = driver.abbreviation,
+    carNumber = driver.carNumber,
+    countryFlag = driver.countryFlag,
+    nationality = driver.nationality,
+    teamName = team.name,
+    teamColor = team.primaryColor,
+    position = position,
+    points = points
 )

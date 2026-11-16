@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import ru.nerv.apex.data.local.entity.DriverEntity
 import ru.nerv.apex.data.local.entity.RaceEntity
 import ru.nerv.apex.data.local.entity.ResultEntity
 import ru.nerv.apex.data.local.entity.TeamEntity
@@ -32,4 +33,13 @@ interface RaceDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTeams(teams: List<TeamEntity>)
+
+    @Query("SELECT * FROM teams")
+    suspend fun getTeamsList(): List<TeamEntity>
+
+    @Query("SELECT * FROM drivers ORDER BY position ASC")
+    fun observeDrivers(): Flow<List<DriverEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDrivers(drivers: List<DriverEntity>)
 }
